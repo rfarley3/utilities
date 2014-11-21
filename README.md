@@ -10,4 +10,9 @@ Random collection of utilities:
     * produces pdf timestamped, commit-stamped
     * red crossed out for deletions
     * blue swiggly underlines for additions
+* figletize.py
+    * converts text into ASCII art version
+    * use -t for text to figletize
+    * use -f to select a font, or skip it for random
+    * goes in a loop of random fonts
 
