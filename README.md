@@ -15,4 +15,6 @@ Random collection of utilities:
     * use -t for text to figletize
     * use -f to select a font, or skip it for random
     * goes in a loop of random fonts
+* make-color.sh
+    * wrapper for make to colorize compiler (namely gcc) output
 
