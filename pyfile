@@ -3,6 +3,8 @@ import magic
 import sys
 
 def main ():
+	#f = magic.Magic(uncompress=True)
+	#res = f.from_file(sys.argv[1])
 	res = magic.from_file(sys.argv[1])
 	print (sys.argv[1] + ": " + res.decode('utf-8') )
 
