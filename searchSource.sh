@@ -40,9 +40,10 @@ echo "pattern : ${PATTERN}"
 # --color=always  output color escapes, regardless of the fact it detects a pipe
 # -s              don't show output about files it didn't process
 # -R              recursive
+# -E              interpret pattern as regex (like egrep)
 # 2> /dev/null    discard all stderr
 # sed ...         make output cleaner by getting rid of root dir (note, rem if you want to see full paths)
-CMD="grep -n --color=always --binary-files=without-match -s -R --exclude-dir .git ${EXCLUDES} ${INCLUDES} \"${PATTERN}\" ${FILE} 2> /dev/null"
+CMD="grep -n --color=always --binary-files=without-match -s -R --exclude-dir .git ${EXCLUDES} ${INCLUDES} -E \"${PATTERN}\" ${FILE} 2> /dev/null"
 CMD="${CMD} | sed -e 's|${FILE}||' | sed -e 's|^/||'"
 echo "running : ${CMD}"
 echo "----------------------------------------------------"
