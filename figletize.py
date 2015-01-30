@@ -41,7 +41,7 @@ nerdy_but_unpretty = [ 'hex', 'octal', 'binary', 'rot13', 'morse' ]
 """
 
 
-def randFont():
+def rand_font():
     """ Uses an internal array of font options to choose
     and init a pyfiglet obj
     """
@@ -49,7 +49,7 @@ def randFont():
     # here are the fonts that I find the most interesting:
     fonts = ['3-d', '3x5', '5lineoblique', 'a_zooloo', 'acrobatic', 'alligator', 'alligator2', 'alphabet', 'avatar', 'banner', 'banner3-D', 'banner4', 'barbwire', 'basic', 'bell', 'big', 'bigchief', 'block', 'britebi', 'broadway', 'bubble', 'bulbhead', 'calgphy2', 'caligraphy', 'catwalk', 'charact1', 'charact4', 'chartri', 'chunky', 'clb6x10', 'coinstak', 'colossal', 'computer', 'contessa', 'contrast', 'cosmic', 'cosmike', 'courbi', 'crawford', 'cricket', 'cursive', 'cyberlarge', 'cybermedium', 'cybersmall', 'devilish', 'diamond', 'digital', 'doh', 'doom', 'dotmatrix', 'double', 'drpepper', 'dwhistled', 'eftichess', 'eftifont', 'eftipiti', 'eftirobot', 'eftitalic', 'eftiwall', 'eftiwater', 'epic', 'fender', 'fourtops', 'fraktur', 'funky_dr', 'fuzzy', 'goofy', 'gothic', 'graceful', 'graffiti', 'helvbi', 'hollywood', 'home_pak', 'invita', 'isometric1', 'isometric2', 'isometric3', 'isometric4', 'italic', 'ivrit', 'jazmine', 'jerusalem', 'kban', 'larry3d', 'lean', 'letters', 'linux', 'lockergnome', 'madrid', 'marquee', 'maxfour', 'mike', 'mini', 'mirror', 'moscow', 'mshebrew210', 'nancyj-fancy', 'nancyj-underlined', 'nancyj', 'new_asci', 'nipples', 'ntgreek', 'nvscript', 'o8', 'odel_lak', 'ogre', 'os2', 'pawp', 'peaks', 'pebbles', 'pepper', 'poison', 'puffy', 'rectangles', 'relief', 'relief2', 'rev', 'roman', 'rounded', 'rowancap', 'rozzo', 'runic', 'runyc', 'sansbi', 'sblood', 'sbookbi', 'script', 'serifcap', 'shadow', 'short', 'sketch_s', 'slant', 'slide', 'slscript', 'small', 'smisome1', 'smkeyboard', 'smscript', 'smshadow', 'smslant', 'smtengwar', 'speed', 'stacey', 'stampatello', 'standard', 'starwars', 'stellar', 'stop', 'straight', 't__of_ap', 'tanja', 'tengwar', 'thick', 'thin', 'threepoint', 'ticks', 'ticksslant', 'tinker-toy', 'tombstone', 'trek', 'tsalagi', 'twin_cob', 'twopoint', 'univers', 'usaflag', 'utopiabi', 'weird', 'whimsy', 'xbritebi', 'xcourbi']  # noqa
     # do 100 tries in case font doesn't exist
-    # if there are 100 failures, asciiArtText will fail
+    # if there are 100 failures, ascii_art_text will fail
     # or barf on its Figlet constructor
     for i in range(100):
         fi = fonts[random.randint(0, len(fonts) - 1)]
@@ -64,7 +64,7 @@ def randFont():
     return fi
 
 
-def asciiArtText(str, font, term_w):
+def ascii_art_text(str, font, term_w):
     """ Given a str, and a font(or rand for choose a font at random)
     and a terminal width. Returns figletized text
     and the font that was used.
@@ -82,7 +82,7 @@ def asciiArtText(str, font, term_w):
         #   wider than 1/4 the term window(the larger, the prettier)
         fi = "none"
         for i in range(100):
-            fi = randFont()
+            fi = rand_font()
             f = pyfiglet.Figlet(font=fi)  # , width=term_w )
             out = f.renderText(str)
             from io import StringIO
@@ -95,7 +95,7 @@ def asciiArtText(str, font, term_w):
     return(out, fi)
 
 
-def resetDimensions():
+def reset_dimensions():
     """ Get the terminal dimensions """
     try:
         # *nix get terminal/console width
@@ -113,8 +113,8 @@ def usage():
     """ If __main__ be able to show the usage
     """
     print(USAGE % (sys.argv[0]))  # uses the global from up top of this file
-    (term_w, term_h) = resetDimensions()
-    (banner, font) = asciiArtText("ASCII Art, FTW!", "rand", term_w)
+    (term_w, term_h) = reset_dimensions()
+    (banner, font) = ascii_art_text("ASCII Art, FTW!", "rand", term_w)
     print(banner)
     print("Font: " + font)
     sys.exit(0)
@@ -150,8 +150,8 @@ if __name__ == "__main__":
     #######
     # do the deed in a loop until the user exits
     while(1):
-        (term_w, term_h) = resetDimensions()
-        (banner, font) = asciiArtText(in_str, font, term_w)
+        (term_w, term_h) = reset_dimensions()
+        (banner, font) = ascii_art_text(in_str, font, term_w)
         print(banner + '\n')
         print("Font: " + font)
         ctrl_char = input("Enter q to quit, or any key to show another font ")
