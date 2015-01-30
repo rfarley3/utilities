@@ -8,7 +8,8 @@
 #    * useful if your gcc doesn't support this
 #
 # COLORS
-#   Your colors may be different than mine, I use zenburn, which makes the yellow dull and non-bold red gray.
+#   Your colors may be different than mine, 
+#   I use zenburn, which makes the yellow dull and non-bold red gray.
 #   https://ask.fedoraproject.org/en/question/7000/how-to-set-colors-for-bash-shell-primary-prompt/
 #
 #   Important events are in green (entire line)
@@ -21,9 +22,12 @@
 #
 # METHODOLOGY
 #    Calls make, pushing stderr over stdout, piping all into a perl parser
-#    For each line read perl does a conditional OR, allowing it to exit at the first match
-#    If the line matches a regex, then it is a color code, the line, and a color clearing code is printed
-#    Codes are injected via regex replace or print, depending on if you want to color entire line or segment
+#    For each line read perl does a conditional OR, 
+#    allowing it to exit at the first match
+#    If the line matches a regex, then it is a color code, 
+#    the line, and a color clearing code is printed
+#    Codes are injected via regex replace or print, depending 
+#    on if you want to color entire line or segment.
 #    If it matches Error, then it also exits
 #    If nothing matches, it prints clear . line . clear
 #

@@ -9,5 +9,5 @@
 # -s silent mode, suppress error output
 # -r or -R recursive
 # -n line number
-grep -RIls $'\r$' .   # yet another & even shorter alternative
+grep -RIls $'\r$' .
 

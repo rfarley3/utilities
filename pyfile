@@ -1,13 +1,14 @@
-#!/Library/Frameworks/Python.framework/Versions/3.4/bin/python3
+#!/usr/bin/env python3
 import magic
 import sys
 
-def main ():
-	#f = magic.Magic(uncompress=True)
-	#res = f.from_file(sys.argv[1])
-	res = magic.from_file(sys.argv[1])
-	print (sys.argv[1] + ": " + res.decode('utf-8') )
+
+def main():
+    # f = magic.Magic(uncompress=True)
+    # res = f.from_file(sys.argv[1])
+    res = magic.from_file(sys.argv[1])
+    print(sys.argv[1] + ": " + res.decode('utf-8'))
+
 
 if __name__ == "__main__":
-	main ()
-
+    main()
