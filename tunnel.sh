@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 ##############################################################
 # create a proxy friendly tunnel from localhost:$2 to $1:$2
 # depends on .bashrc/bash_profile/.profile export proxy=ip:port
