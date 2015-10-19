@@ -28,15 +28,20 @@
 #    * make the bbl accurate and diff-able
 #
 import subprocess
-# import sys
+import sys
 import os
+import os.path
 from random import randint
 
-latex = "pdflatex"  # alt, use latex = "latexmk"
+# latex = "latexmk"  # pdflatex"  # alt, use latex = "latexmk"
+# latex = "latexmk -pdflatex='pdflatex -file-line-error -interaction=nonstopmode -synctex=1' -pdf"
+latex = "latexmk -pdflatex='pdflatex -file-line-error -synctex=1' -pdf"
 repair_graphics = True  # sed out the graphics includes
 # the introduction of edits throws off placement anyways
-latexopt = ""  # options to give latex command
-
+ldiff_flatten = True
+exclude_envs = "|kleeexpr|disasm|logfile|Verbatim|FancyVerb|VerbatimEnvironment"
+# --exclude-safecmd=\"kleeexpr,disasm\" --exclude-textcmd=\"kleeexpr,disasm\"
+exclude_incs = "| grep -v 7Curric | grep -v Appendix- "
 
 # for any command, return all output as an array of lines
 def _cmd(cmd):
@@ -55,10 +60,10 @@ def _cmd_l(cmd):
 # for any command, don't show me the output, just run it
 def _cmd_p(cmd):
     print(">> " + cmd)
-    subprocess.call(cmd, shell=True)
+    return subprocess.call(cmd, shell=True)
 
 
-def main():
+def main(old=None, strip_figs=False):
     # find the file in the repo that is the root/main tex
     # this is the file that you would run the latex command on to compile
     mainfile = _cmd_l("git grep -l '^[ \\t]*\\\\documentclass'")
@@ -78,13 +83,16 @@ def main():
     # print(newest_commit)
 
     new = "--"
-    old = newest_commit
-    out = "diff-" + timestamp + "-" + old[0:7] + "-curr.pdf"
-    if wc_l == 0:  # a repo without changes has 0 lines in diff
-        new = newest_commit
-        # the name of the second most recent commit
-        old = str(_cmd_l("git log --pretty=oneline --abbrev=commit -n 2 | tail -1")).split(" ")[0]  # noqa
-        out = "diff-" + timestamp + "-" + old[0:7] + "-" + new[0:7] + ".pdf"
+    if old is None:
+        old = newest_commit
+        out = "diff-" + timestamp + "-" + old[0:7] + "-curr.pdf"
+        if wc_l == 0:  # a repo without changes has 0 lines in diff
+            new = newest_commit
+            # the name of the second most recent commit
+            old = str(_cmd_l("git log --pretty=oneline --abbrev=commit -n 2 | tail -1")).split(" ")[0]  # noqa
+            out = "diff-" + timestamp + "-" + old[0:7] + "-" + new[0:7] + ".pdf"
+    else:
+        out = "diff-" + timestamp + "-" + old[0:7] + "-curr.pdf"
 
     # you can use the above as a wrapper to auto call latexdiff
     # (should it work for you)
@@ -128,27 +136,36 @@ def main():
     # we assume that the current bbl is good enough for
     # the old one so need to make it
     print("!! Assuming that bbl in current directory is good enough")
-    _cmd_p("cp " + dircall + "/" + mainbase + ".bbl " + dirtmp + "/.")
+    _cmd_p("cp " + dircall + "/" + mainbase + ".bbl " + dirtmp + "/Paper/.")
 
-    # converts all those many tex into a single tex, store in temp dir
-    print("Latexpanding old")
-    _cmd_p("latexpand \"" + mainbase + "\".tex > old-flattened.tex")
+    if ldiff_flatten:
+        _cmd_p("cat \"" + mainbase + ".tex\" " + exclude_incs + "| LC_CTYPE=C sed 's/%\\\\include.*//' > \"" + mainbase + "-diffcorrected.tex\"")
+        _cmd_p("cat \"" + dircall + "/" + mainbase + ".tex\" " + exclude_incs + "| LC_CTYPE=C sed 's/%\\\\include.*//' > \"" + dircall + "/" + mainbase + "-diffcorrected.tex\"")
+        if _cmd_p("latexdiff --config=\"PICTUREENV=(?:picture|DIFnomarkup" + exclude_envs + ")[\\w\\d*@]*\" --flatten --ignore-warnings \"" + mainbase + "-diffcorrected.tex\" \"" + dircall + "/" + mainbase + "-diffcorrected.tex\" > diff.tex") != 0:
+            print("Error, latexdiff")
+            sys.exit(1)
+    else:
+        # converts all those many tex into a single tex, store in temp dir
+        print("Latexpanding old")
+        _cmd_p("latexpand \"" + mainbase + "\".tex > old-flattened.tex")
 
-    # TODO git archive the new if new isn't '--'
-    # so you can do arbitrary commit diffs
-    # for now, you aren't diffing anything other than the latest two
-    # if most recent commit != current, then you are doing:
-    # diff     <most recent commit> <dircall>
-    # if most recent commit == current, then you are doing:
-    # diff <2nd most recent commit> <dircall>
-    print("Latexpanding new")
-    _cmd_p("(cd " + dircall + " && latexpand \"" + mainbase + "\".tex) > new-flattened.tex")  # noqa
+        # TODO git archive the new if new isn't '--'
+        # so you can do arbitrary commit diffs
+        # for now, you aren't diffing anything other than the latest two
+        # if most recent commit != current, then you are doing:
+        # diff     <most recent commit> <dircall>
+        # if most recent commit == current, then you are doing:
+        # diff <2nd most recent commit> <dircall>
+        print("Latexpanding new")
+        _cmd_p("(cd " + dircall + " && latexpand \"" + mainbase + "\".tex) > new-flattened.tex")  # noqa
 
-    # this does the heavy lifting, converts two tex files
-    # into a word diff that is a valid tex
-    # removals are in red, additions are in blue
-    print("latexdiff")
-    _cmd_p("latexdiff old-flattened.tex new-flattened.tex > diff.tex")
+        # this does the heavy lifting, converts two tex files
+        # into a word diff that is a valid tex
+        # removals are in red, additions are in blue
+        print("latexdiff")
+        _cmd_p("latexdiff --ignore-warnings --exclude-safecmd=kleeexpr,disasm old-flattened.tex new-flattened.tex > diff.tex")
+
+
     if repair_graphics:
         print("repair graphics")
         dirgit = dirgit.replace('/', '\\/')
@@ -158,24 +175,36 @@ def main():
         # e.g. that you have a ../Figs/<fig> convention
         # this searches for relative Figs path and
         # makes it absolute so that the tex can compile
-        _cmd_p("LC_CTYPE=C sed 's/\.\.\/Figs/" + dirgit + "\/Figs/' diff.tex > \"" + mainfile + "\"")  # noqa
+        if strip_figs:
+            _cmd_p("LC_CTYPE=C sed 's/\\includegraphics\(\[.*\]\){.*}/\\includegraphics\\1{Figplaceholder}/' diff.tex > diff2.tex")  # noqa
+            _cmd_p("mv -f diff2.tex diff.tex")
+        #else:
+        #    _cmd_p("LC_CTYPE=C sed 's/\.\.\/Figs/" + dirgit + "\/Figs/' diff.tex > \"" + mainfile + "\"")  # noqa
         # the above combines the 'mv' that you see in the else below
-    else:
-        _cmd_p("mv -f diff.tex \"" + mainfile + "\"")
+    _cmd_p("mv -f diff.tex \"" + mainfile + "\"")
     print("Done making diff")
 
     # so now that you have a cool diff'ed tex you need to compile it
     # tex can be funny and it's best to compile, bibtex, compile
+    pdffile = "%s.pdf" % mainbase
     print(latex + " 1")
     _cmd_p(latex + " \"" + mainbase + "\"")
+    if not os.path.isfile(pdffile):
+        print("Error, can't find %s, temp dir is %s" % (pdffile, dirtmp))
+        sys.exit(1)
     print("bibtex")
     _cmd_p("bibtex " + " \"" + mainbase + "\"")
     print(latex + " 2")
     _cmd_p(latex + " \"" + mainbase + "\"")
+    if not os.path.isfile(pdffile):
+        print("Error, can't find %s, temp dir is %s" % (pdffile, dirtmp))
+        sys.exit(1)
     # might as well compile again!
     print(latex + " 3")
     _cmd_p(latex + " \"" + mainbase + "\"")
-
+    if not os.path.isfile(pdffile):
+        print("Error, can't find %s, temp dir is %s" % (pdffile, dirtmp))
+        sys.exit(1)
     # now copy the result from the temporary directory to
     # the directory you called this script from
     print("publishing")
@@ -190,5 +219,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    old = None
+    if len(sys.argv) > 1:
+        old = sys.argv[1]
+    main(old, strip_figs=False)
 
